@@ -1,0 +1,28 @@
+version: "3.5"
+
+services:
+  development:
+    build: .
+    command: sleep infinity    
+    user: "1000"
+    environment:
+      # allow proper integration of .bashrc
+     - "HOME=$HOME"
+    volumes:
+      - $HOME/devhome:$HOME
+      # Mount Project
+      - ./../:$HOME/HALITE-II
+      # Some global configuration files
+      # share id to allow git integration
+      - $HOME/.ssh:$HOME/.ssh:ro
+      # share terminal configuration
+      - $HOME/.bashrc:$HOME/.bashrc:ro
+      # Include global git configuration
+      - $HOME/.gitconfig:$HOME/.gitconfig:ro
+      # user information
+      - /etc/passwd:/etc/passwd:ro
+    # [Optional] Required for ptrace-based debuggers like C++, Go, and Rust
+    # cap_add:
+    #   - SYS_PTRACE
+    # security_opt:
+    #   - seccomp:unconfined
