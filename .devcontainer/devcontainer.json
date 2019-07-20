@@ -9,7 +9,6 @@
 	"workspaceFolder": "/home/victor/HALITE-II",
 
 	// Uncomment the next line if you want to publish any ports.
-	"appPort": [4000],
 
 	// Uncomment the next line if you want to add in default container specific settings.json values
 	// "settings":  { "workbench.colorTheme": "Quiet Light" },
@@ -18,6 +17,8 @@
 	// "postCreateCommand": "yarn install",
 
 	"extensions": [
-		"dbaeumer.vscode-eslint"
+		"dbaeumer.vscode-eslint",
+		"octref.vetur",
+		"mhutchie.git-graph"
 	]
 }

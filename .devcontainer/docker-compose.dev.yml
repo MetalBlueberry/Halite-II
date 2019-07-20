@@ -21,6 +21,8 @@ services:
       - $HOME/.gitconfig:$HOME/.gitconfig:ro
       # user information
       - /etc/passwd:/etc/passwd:ro
+    ports:
+      - "4000:4000"
     # [Optional] Required for ptrace-based debuggers like C++, Go, and Rust
     # cap_add:
     #   - SYS_PTRACE
