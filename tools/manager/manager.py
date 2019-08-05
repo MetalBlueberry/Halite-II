@@ -155,6 +155,10 @@ class Manager:
     def view_replay_id(self, id):
         filename = self.db.get_replay_filename(id)
         view_replay(filename)
+
+    def view_last_replay_id(self):
+        filename = self.db.get_last_replay_filename()
+        view_replay(filename)
         
 
 
@@ -227,6 +231,10 @@ class Commandline:
         self.parser.add_argument("-V", "--view", dest="view",
                                  action = "store", default = "",
                                  help = "View a replay from the saved records")
+
+        self.parser.add_argument("-v", "--view-last", dest="viewlast",
+                                 action = "store_true", default = False,
+                                 help = "View last replay from the saved records")
 
         self.parser.add_argument("-R", "--results", dest="results",
                                  action = "store", default = "",
@@ -363,7 +371,11 @@ class Commandline:
         elif self.cmds.view:
             print("Viewing replay %s" %(self.cmds.view))
             self.manager.view_replay_id(self.cmds.view)
-        
+
+        elif self.cmds.viewlast:            
+            print("Viewing last replay")
+            self.manager.view_last_replay_id()
+
         elif self.cmds.results:
             print("Displaying latest %s results from offset %s" %(self.cmds.limit, self.cmds.results))
             self.manager.show_results(self.cmds.results, self.cmds.limit)

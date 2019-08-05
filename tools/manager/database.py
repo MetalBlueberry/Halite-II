@@ -79,7 +79,13 @@ class Database:
         result = self.retrieve(sql, (id,))
         print(result[0][0])
         return result[0][0]
-        
+
+    def get_last_replay_filename(self):
+        print(id)
+        sql = 'SELECT replay_file FROM results ORDER BY game_id desc LIMIT 1'
+        result = self.retrieve(sql)
+        print(result[0][0])
+        return result[0][0]        
 
     def save_player(self, player):
         self.update_player_skill(player.name, player.skill, player.mu, player.sigma)
