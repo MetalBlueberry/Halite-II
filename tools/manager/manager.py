@@ -27,8 +27,8 @@ import player as pl
 import util
 
 
-halite_command = "./halite"
-visualizer_command = ["electron", "../visualizer", "-o"]
+halite_command = "halite"
+visualizer_command = ["chlorine","-o"]
 # db_filename is now specified at command line, with the default set to "db.sqlite3"
 browser_binary = "firefox"
 
