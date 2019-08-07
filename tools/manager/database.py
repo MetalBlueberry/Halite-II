@@ -44,8 +44,8 @@ class Database:
     def recreate(self):
         cursor = self.db.cursor()
         try:
-            cursor.execute("create table results(id int NOT NULL, game_id int, name text, finish int, num_players int, map_width int, map_height int, map_seed int, map_generator text, timestamp date, logs text, replay_file text, primary key (id))")
-            cursor.execute("create table players(id int NOT NULL, name text , path text, lastseen date, rank int default 1000, skill real default 0.0, mu real default 25.0, sigma real default 8.33,ngames int default 0, active int default 1, primary key (id))")
+            cursor.execute("create table results(id int NOT NULL, game_id int, name text, finish int, num_players int, map_width int, map_height int, map_seed int, map_generator text, timestamp DATETIME, logs text, replay_file text)")
+            cursor.execute("create table players(id int NOT NULL, name text , path text, lastseen DATETIME, rank int default 1000, skill real default 0.0, mu real default 25.0, sigma real default 8.33,ngames int default 0, active int default 1, primary key (id))")
             self.db.commit()
         except:
             pass
@@ -100,7 +100,7 @@ class Database:
         return self.retrieve(sql, game_id)
 
     def get_results(self, offset, limit):
-        sql = 'SELECT game_id, (GROUP_CONCAT (name)), (GROUP_CONCAT (finish)), map_width, map_height, map_seed, map_generator, timestamp, logs, replay_file FROM results GROUP BY game_id ORDER BY game_id DESC LIMIT %s OFFSET %s'
+        sql = 'SELECT game_id, GROUP_CONCAT(name), GROUP_CONCAT(finish), map_width, map_height, map_seed, map_generator, timestamp, logs, replay_file FROM results GROUP BY game_id ORDER BY game_id DESC LIMIT %d OFFSET %d'
         return self.retrieve(sql, (limit, offset))
 
     def get_replay_filename(self, id):
