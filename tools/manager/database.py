@@ -3,26 +3,30 @@ import datetime
 import util
 import os
 
-import mysql.connector
+import pymysql.cursors
+
+# Connect to the database
+
 
 class Database:
     def __init__(self, filename):
+        connection = pymysql.connect(
+            host='database-1.cluster-cgeszsxebj04.us-east-1.rds.amazonaws.com',
+            user="admin",
+            password='haliteisgrat',
+            db='testdb',
+            charset='utf8mb4',
+            # cursorclass=pymysql.cursors.DictCursor,
+            connect_timeout=5
+            )
+
         # connection = mysql.connector.connect(
-        #     host='halite2.cluster-cgeszsxebj04.us-east-1.rds.amazonaws.com',
+        #     host='database-1.cluster-cgeszsxebj04.us-east-1.rds.amazonaws.com',
         #     database='halite2',
         #     user="admin",
         #     password='haliteisgrat',
         #     connect_timeout=30
-        # 
-
-        connection = mysql.connector.connect(
-            host='database-1.cluster-cgeszsxebj04.us-east-1.rds.amazonaws.com',
-            database='halite2',
-            user="admin",
-            password='haliteisgrat',
-            connect_timeout=30
-        )
-
+        # )
 
         # self.db = sqlite3.connect(filename)
         self.db = connection
@@ -35,13 +39,13 @@ class Database:
             pass
 
     def now(self):
-        return datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def recreate(self):
         cursor = self.db.cursor()
         try:
-            cursor.execute("create table results(id integer primary key auto_increment, game_id integer, name text, finish integer, num_players integer, map_width integer, map_height integer, map_seed integer, map_generator text, timestamp date, logs text, replay_file text)")
-            cursor.execute("create table players(id integer primary key, name text , path text, lastseen date, rank integer default 1000, skill real default 0.0, mu real default 25.0, sigma real default 8.33,ngames integer default 0, active integer default 1)")
+            cursor.execute("create table results(id int NOT NULL, game_id int, name text, finish int, num_players int, map_width int, map_height int, map_seed int, map_generator text, timestamp date, logs text, replay_file text, primary key (id))")
+            cursor.execute("create table players(id int NOT NULL, name text , path text, lastseen date, rank int default 1000, skill real default 0.0, mu real default 25.0, sigma real default 8.33,ngames int default 0, active int default 1, primary key (id))")
             self.db.commit()
         except:
             pass
@@ -77,8 +81,11 @@ class Database:
 
     def add_player(self, name, path, active=True):
         print("Add player to DB")
-        self.update("insert into players  (name, path, lastseen, rank, skill, mu, sigma ,ngames, active) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                    (name, path, self.now(), 1000, 0.0, 25.0, 25.0/3.0, 0, active))
+        sql = 'SELECT max(id) FROM players'
+        player_id = self.retrieve(sql)[0][0]
+        player_id = int(player_id) + 1 if player_id else 1        
+        self.update("insert into players  (id, name, path, lastseen, rank, skill, mu, sigma ,ngames, active) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (player_id, name, path, self.now(), 1000, 0.0, 25.0, 25.0/3.0, 0, active))
 
     def delete_player(self, name):
         self.update("delete from players where name=%s", [name])
@@ -146,9 +153,3 @@ class Database:
         for player in players:
             self.add_player(player.name, player.path, player.active)
 
-
-if __name__ == "__main__":
-    print("Connecting")
-    db = Database("")
-    print("test db")
-    pass
