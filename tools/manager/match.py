@@ -8,6 +8,7 @@ from skills import trueskill
 from subprocess import Popen, PIPE, call
 
 record_dir = "replays"
+logs_dir = "logs"
 
 def update_skills(players, ranks):
     """ Update player skills based on ranks from a match """
@@ -88,12 +89,12 @@ class Match:
 
         if self.keep_logs:
             print("Keeping logs\n")
-            if not os.path.exists(record_dir):
-                os.makedirs(record_dir)
+            if not os.path.exists(logs_dir):
+                os.makedirs(logs_dir)
             try:
                 for key, filename in self.logs.items():
-                    shutil.move(filename, record_dir)
-                    self.logs[key] = os.path.join(record_dir, filename)
+                    shutil.move(filename, logs_dir)
+                    self.logs[key] = os.path.join(logs_dir, filename)
             except Exception as e:
                 print(e)
         else: 

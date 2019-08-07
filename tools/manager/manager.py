@@ -26,6 +26,8 @@ import database
 import player as pl
 import util
 
+import boto3
+
 
 halite_command = "halite"
 visualizer_command = ["chlorine", "-o"]
@@ -64,6 +66,21 @@ class Manager:
             self.show_ranks()
         except Exception as e:
             print("Exception in run_round:")
+            print(e)
+
+        try:
+            s3 = boto3.resource('s3')
+
+            object = s3.Object('halite2', m.replay_file)
+            object.put(Body=open(m.replay_file, 'rb'))
+
+            for key, filename in m.logs.items():
+                object = s3.Object('halite2', filename)
+                object.put(Body=open(filename, 'rb'))
+
+        except Exception as e:
+            print(m.logs)
+            print("Exception uploading logs to s3")
             print(e)
 
     def save_players(self, players):
@@ -399,6 +416,7 @@ class Commandline:
             self.run_matches(-1)
 
         elif self.cmds.reset:
+            raise NotImplementedError("This function is not implemented yet")
             print(
                 'You want to reset the database.  This is IRRECOVERABLE.  Make a backup first.')
             print('The existing bots names, paths, and activation status will be saved.')
