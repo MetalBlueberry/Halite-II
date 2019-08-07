@@ -7,13 +7,12 @@ import pymysql.cursors
 
 # Connect to the database
 
-
 class Database:
     def __init__(self, filename):
         connection = pymysql.connect(
             host='database-1.cluster-cgeszsxebj04.us-east-1.rds.amazonaws.com',
             user="admin",
-            password='haliteisgrat',
+            password=os.environ['DB_PASSWORD'],
             db='testdb',
             charset='utf8mb4',
             # cursorclass=pymysql.cursors.DictCursor,
