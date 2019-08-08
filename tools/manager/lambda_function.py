@@ -16,7 +16,7 @@ def RegisterBotOnS3Upload(event, context):
     print(name, path)
 
     print("Connecting")
-    db = Database("")
+    db = Database("haliteTest")
     print("test db")
     pass
 
