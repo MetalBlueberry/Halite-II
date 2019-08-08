@@ -38,7 +38,7 @@ class Database:
         cursor = self.db.cursor()
         try:
             cursor.execute("create table results(id int NOT NULL, game_id int, name text, finish int, num_players int, map_width int, map_height int, map_seed int, map_generator text, timestamp DATETIME, logs text, replay_file text)")
-            cursor.execute("create table players(id int NOT NULL, name text , path text, lastseen DATETIME, rank int default 1000, skill real default 0.0, mu real default 25.0, sigma real default 8.33,ngames int default 0, active int default 1, primary key (id))")
+            cursor.execute("create table players(name text(100) NOT NULL, path text, newCodeAvailable int, lastseen DATETIME, rank int default 1000, skill real default 0.0, mu real default 25.0, sigma real default 8.33,ngames int default 0, active int default 1, primary key (name(100)))")
             self.db.commit()
         except:
             pass
@@ -73,15 +73,17 @@ class Database:
         #    self.update_many("INSERT INTO results (game_id, name, finish, num_players, map_width, map_height, map_seed, map_generator, timestamp, logs, replay_file) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", [(game_id, player.name, rank, match.num_players, match.map_width, match.map_height, match.map_seed, match.map_generator, self.now(), str(match.logs), str(match.replay_file))])
 
     def add_player(self, name, path, active=True):
-        print("Add player to DB")
-        sql = 'SELECT max(id) FROM players'
-        player_id = self.retrieve(sql)[0][0]
-        player_id = int(player_id) + 1 if player_id else 1
-        self.update("insert into players  (id, name, path, lastseen, rank, skill, mu, sigma ,ngames, active) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-                    (player_id, name, path, self.now(), 1000, 0.0, 25.0, 25.0/3.0, 0, active))
+        self.update("insert into players  (name, path, newCodeAvailable, lastseen, rank, skill, mu, sigma ,ngames, active) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (name, path, 1, self.now(), 1000, 0.0, 25.0, 25.0/3.0, 0, active))
 
     def delete_player(self, name):
         self.update("delete from players where name=%s", [name])
+
+    def get_players(self):
+        player_records = self.retrieve(
+            "select * from players where active > 0")
+        players = [util.parse_player_record(player) for player in player_records]
+        return players
 
     def get_player(self, names):
         sql = 'select * from players where name=%s ' + \
@@ -93,7 +95,8 @@ class Database:
         return self.retrieve(sql, game_id)
 
     def get_results(self, offset, limit):
-        sql = 'SELECT game_id, GROUP_CONCAT(name), GROUP_CONCAT(finish), map_width, map_height, map_seed, map_generator, timestamp, logs, replay_file FROM results GROUP BY game_id ORDER BY game_id DESC LIMIT %d OFFSET %d' % (limit, offset)
+        sql = 'SELECT game_id, GROUP_CONCAT(name), GROUP_CONCAT(finish), map_width, map_height, map_seed, map_generator, timestamp, logs, replay_file FROM results GROUP BY game_id ORDER BY game_id DESC LIMIT %d OFFSET %d' % (
+            limit, offset)
         return self.retrieve(sql)
 
     def get_replay_filename(self, id):
@@ -132,7 +135,12 @@ class Database:
         self.update("update players set active=%s where name=%s", (0, name))
 
     def update_player_path(self, name, path):
-        self.update("update players set path=%s where name=%s", (path, name))
+        self.update(
+            "update players set path=%s, newCodeAvailable=1 where name=%s", (path, name))
+    
+    def update_player_code_loaded(self, name):
+        self.update(
+            "update players set newCodeAvailable=0 where name=%s", (name))
 
     def reset(self, filename):
         players = list(map(util.parse_player_record,

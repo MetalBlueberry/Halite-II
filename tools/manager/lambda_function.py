@@ -1,5 +1,6 @@
 import json
-from database import Database
+
+from manager import Manager
 
 
 def generate_player_from_key(key:str):
@@ -7,7 +8,7 @@ def generate_player_from_key(key:str):
     file_name = file.split('.')[0]
 
     path = "docker run --rm -i %s:latest" % file_name
-    return file_name, path
+    return key, path
 
 def RegisterBotOnS3Upload(event, context):
     key = event['Records'][0]['s3']['object']['key']
@@ -16,12 +17,9 @@ def RegisterBotOnS3Upload(event, context):
     print(name, path)
 
     print("Connecting")
-    db = Database("haliteTest")
-    print("test db")
-    pass
-
-    db.delete_player(name)
-    db.add_player(name, path)
+    manager = Manager("", "haliteTest")
+    
+    manager.register_player_upload(name, path)
 
     return {
         'statusCode': 200,

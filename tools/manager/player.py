@@ -1,7 +1,8 @@
 class Player:
-    def __init__(self, name, path, last_seen = "", rank = 1000, skill = 0.0, mu = 25.0, sigma = (25.0 / 3.0), ngames = 0, active = 1):
+    def __init__(self, name, path, newCodeAvailable, last_seen = "", rank = 1000, skill = 0.0, mu = 25.0, sigma = (25.0 / 3.0), ngames = 0, active = 1):
         self.name = name
         self.path = path
+        self.newCodeAvailable = newCodeAvailable
         self.last_seen = last_seen
         self.rank = rank
         self.skill = skill

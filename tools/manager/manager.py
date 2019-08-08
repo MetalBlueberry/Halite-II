@@ -25,6 +25,7 @@ import match
 import database
 import player as pl
 import util
+import docker
 
 import boto3
 
@@ -128,6 +129,8 @@ class Manager:
             num_contestants = self.players_min
         print("num_contestants = " + str(num_contestants))
         contestants = self.pick_contestants(num_contestants)
+        for contestant in contestants:
+            self.load_player_in_docker(contestant)
         print(contestants)
         size_w = random.choice(map_dist) * 3
         size_h = int((size_w / 3) * 2)
@@ -135,6 +138,20 @@ class Manager:
         print("\n------------------- running new match... -------------------\n")
         self.run_round(contestants, size_w, size_h, seed)
         self.round_count += 1
+
+    def register_player_upload(self, name, path):
+        p = self.db.get_player((name,))
+        if len(p) == 0:
+            self.db.add_player(name, path)
+        else:
+            self.db.update_player_path(name, path)
+
+    def load_player_in_docker(self, player: pl.Player):
+        print("Player %s code available %s" % (player.name, player.newCodeAvailable))
+        if player.newCodeAvailable:
+            docker.fetch_image_from_s3(player.name)
+            docker.load_in_docker(player.name)
+            self.db.update_player_code_loaded(player.name)
 
     def add_player(self, name, path):
         p = self.db.get_player((name,))
@@ -182,20 +199,6 @@ class Manager:
 
 def view_replay(filename):
     call(visualizer_command + [filename])
-
-
-#    output_filename = filename.replace(".hlt", ".htm")
-#    if not os.path.exists(output_filename):
-#        with open(filename, 'r') as f:
-#            replay_data = f.read()
-#        with open("replays/Visualizer.htm") as f:
-#            html = f.read()
-#        html = html.replace("FILENAME", filename)
-#        html = html.replace("REPLAY_DATA", replay_data)
-#        with open(output_filename, 'w') as f:
-#            f.write(html)
-#    call ([browser_binary, output_filename])
-
 
 class Commandline:
     def __init__(self):
@@ -317,10 +320,8 @@ class Commandline:
         return True
 
     def run_matches(self, rounds):
-        player_records = self.manager.db.retrieve(
-            "select * from players where active > 0")
-        players = [util.parse_player_record(player)
-                   for player in player_records]
+        players = self.manager.db.get_players()
+
         self.total_players = len(players)
         if self.total_players > 3:
             players_max = 4
