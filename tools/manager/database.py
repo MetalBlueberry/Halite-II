@@ -7,28 +7,22 @@ import pymysql.cursors
 
 # Connect to the database
 
+
 class Database:
-    def __init__(self, filename):
-        connection = pymysql.connect(
-            host='database-1.cluster-cgeszsxebj04.us-east-1.rds.amazonaws.com',
+
+    def connection(self, db):
+        return pymysql.connect(
+            host='halitedb.cluster-cgeszsxebj04.us-east-1.rds.amazonaws.com',
             user="admin",
             password=os.environ['DB_PASSWORD'],
-            db='testdb',
+            db=db,
             charset='utf8mb4',
             # cursorclass=pymysql.cursors.DictCursor,
             connect_timeout=5
-            )
+        )
 
-        # connection = mysql.connector.connect(
-        #     host='database-1.cluster-cgeszsxebj04.us-east-1.rds.amazonaws.com',
-        #     database='halite2',
-        #     user="admin",
-        #     password='haliteisgrat',
-        #     connect_timeout=30
-        # )
-
-        # self.db = sqlite3.connect(filename)
-        self.db = connection
+    def __init__(self, filename):
+        self.db = self.connection(filename)
         self.recreate()
 
     def __del__(self):
@@ -82,7 +76,7 @@ class Database:
         print("Add player to DB")
         sql = 'SELECT max(id) FROM players'
         player_id = self.retrieve(sql)[0][0]
-        player_id = int(player_id) + 1 if player_id else 1        
+        player_id = int(player_id) + 1 if player_id else 1
         self.update("insert into players  (id, name, path, lastseen, rank, skill, mu, sigma ,ngames, active) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                     (player_id, name, path, self.now(), 1000, 0.0, 25.0, 25.0/3.0, 0, active))
 
@@ -145,10 +139,9 @@ class Database:
                            self.retrieve('select * from players')))
         assert players, 'No players recovered from database%s  Reset aborted.'
         # blow out database
-        self.db.close()
-        os.remove(filename)
-        self.db = sqlite3.connect(filename)
+        self.update("drop table players")
+        self.update("drop table results")
+
         self.recreate()
         for player in players:
             self.add_player(player.name, player.path, player.active)
-

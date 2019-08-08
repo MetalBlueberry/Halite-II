@@ -31,7 +31,7 @@ import boto3
 
 halite_command = "halite"
 visualizer_command = ["chlorine", "-o"]
-# db_filename is now specified at command line, with the default set to "db.sqlite3"
+# db_name is now specified at command line, with the default set to "db.sqlite3"
 browser_binary = "firefox"
 
 
@@ -40,7 +40,7 @@ def max_match_rounds(width, height):
 
 
 class Manager:
-    def __init__(self, halite_binary, db_filename, players=None, rounds=-1, players_max=4):
+    def __init__(self, halite_binary, db_name, players=None, rounds=-1, players_max=4):
         self.halite_binary = halite_binary
         self.players = players
         self.players_min = 2
@@ -51,7 +51,7 @@ class Manager:
         self.keep_logs = True
         self.priority_sigma = True
         self.exclude_inactive = False
-        self.db = database.Database(db_filename)
+        self.db = database.Database(db_name)
 
     def run_round(self, contestants, width, height, seed):
         m = match.Match(contestants, width, height, seed, 2 * len(contestants)
@@ -199,7 +199,7 @@ def view_replay(filename):
 
 class Commandline:
     def __init__(self):
-        # self.manager is created after we know the db_filename, so first two lines of Commandline.act() method
+        # self.manager is created after we know the db_name, so first two lines of Commandline.act() method
         self.cmds = None
         self.parser = argparse.ArgumentParser()
         self.no_args = False
@@ -280,8 +280,8 @@ class Commandline:
                                  action='store_true', default=False,
                                  help='Delete ALL information in the database, then recreate a new one with existing bot names and paths')
 
-        self.parser.add_argument('--db', '--database', dest='db_filename',
-                                 action="store", default="db.sqlite3",
+        self.parser.add_argument('--db', '--database', dest='db_name',
+                                 action="store", default="haliteTest",
                                  help='Specify the database filename')
 
         self.parser.add_argument('--edit', dest='editBot',
@@ -333,9 +333,9 @@ class Commandline:
             self.manager.run_rounds(self.cmds.player_dist, self.cmds.map_dist)
 
     def act(self):
-        print('Using database %s' % self.cmds.db_filename)
+        print('Using database %s' % self.cmds.db_name)
         self.manager = Manager(
-            halite_command, self.cmds.db_filename, None, -1, 2)
+            halite_command, self.cmds.db_name, None, -1, 2)
 
         if self.cmds.deleteReplays:
             print("keep_replays = False")
@@ -416,17 +416,15 @@ class Commandline:
             self.run_matches(-1)
 
         elif self.cmds.reset:
-            raise NotImplementedError("This function is not implemented yet")
             print(
                 'You want to reset the database.  This is IRRECOVERABLE.  Make a backup first.')
             print('The existing bots names, paths, and activation status will be saved.')
-            print('Then, the database will be DELETED.')
             print(
                 'A new, empty database will be created in its place using the same filename.')
             print('Finally, the saved bots will be added as new bots (ie names, paths and activation statuses only) in the new database.')
             ok = input('Type YES to continue: ')
             if ok == 'YES':
-                self.manager.db.reset(self.cmds.db_filename)
+                self.manager.db.reset(self.cmds.db_name)
                 print('Database reset completed.')
             else:
                 print('Database reset aborted.  No changes made.')
