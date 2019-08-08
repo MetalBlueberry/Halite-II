@@ -253,11 +253,13 @@ class Commandline:
                                  help="View last replay from the saved records")
 
         self.parser.add_argument("-R", "--results", dest="results",
-                                 action="store", default="",
+                                 action="store", default=-1,
+                                 type=int,
                                  help="View results starting from offset")
 
         self.parser.add_argument("-L", "--limit", dest="limit",
-                                 action="store", default="25",
+                                 action="store", default=25,
+                                 type=int,
                                  help="Limit number of results")
 
         self.parser.add_argument("-n", "--no-replays", dest="deleteReplays",
@@ -396,7 +398,7 @@ class Commandline:
             print("Viewing last replay")
             self.manager.view_last_replay_id()
 
-        elif self.cmds.results:
+        elif self.cmds.results >= 0:
             print("Displaying latest %s results from offset %s" %
                   (self.cmds.limit, self.cmds.results))
             self.manager.show_results(self.cmds.results, self.cmds.limit)
